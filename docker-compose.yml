@@ -1,0 +1,23 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: formance
+      POSTGRES_PASSWORD: formance
+      POSTGRES_DB: reconciliation
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  formance-ledger:
+    image: ghcr.io/formancehq/ledger:v2.2.1
+    depends_on:
+      - postgres
+    environment:
+      POSTGRES_URI: postgres://formance:formance@postgres:5432/reconciliation?sslmode=disable
+    ports:
+      - "3068:3068"
+
+volumes:
+  postgres_data:
