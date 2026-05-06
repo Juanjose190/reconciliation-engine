@@ -20,10 +20,10 @@ export class Correction {
   @Column()
   reason: string;
 
-  @Column({ nullable: true })
+  @Column({ type: "text", nullable: true })
   formanceTransactionId: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: "uuid", nullable: true })
   createdBy: string | null;
 
   @CreateDateColumn()

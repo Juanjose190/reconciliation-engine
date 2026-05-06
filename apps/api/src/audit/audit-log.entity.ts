@@ -26,7 +26,7 @@ export class AuditLog {
   @Column({ type: "jsonb", nullable: true })
   afterState: Record<string, unknown> | null;
 
-  @Column({ nullable: true })
+  @Column({ type: "uuid", nullable: true })
   actorId: string | null;
 
   @CreateDateColumn()

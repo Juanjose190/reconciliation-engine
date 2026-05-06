@@ -26,6 +26,6 @@ export class ReconciliationRun {
   @CreateDateColumn()
   startedAt: Date;
 
-  @Column({ nullable: true })
+  @Column({ type: "timestamptz", nullable: true })
   finishedAt: Date | null;
 }

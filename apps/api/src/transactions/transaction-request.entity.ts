@@ -26,10 +26,10 @@ export class TransactionRequest {
   @Column()
   tenantId: string;
 
-  @Column({ nullable: true })
+  @Column({ type: "uuid", nullable: true })
   sourceUserId: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: "uuid", nullable: true })
   destinationUserId: string | null;
 
   @Column({ type: "enum", enum: TransactionType })
@@ -44,7 +44,7 @@ export class TransactionRequest {
   @Column({ type: "enum", enum: TransactionStatus, default: TransactionStatus.Received })
   status: TransactionStatus;
 
-  @Column({ nullable: true })
+  @Column({ type: "text", nullable: true })
   formanceTransactionId: string | null;
 
   @Column()

@@ -20,7 +20,7 @@ export class ExternalTransaction {
   @Column()
   tenantId: string;
 
-  @Column({ nullable: true })
+  @Column({ type: "uuid", nullable: true })
   transactionRequestId: string | null;
 
   @Column()
@@ -41,13 +41,13 @@ export class ExternalTransaction {
   @Column({ type: "numeric", precision: 18, scale: 2, nullable: true })
   settledAmount: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: "text", nullable: true })
   failureReason: string | null;
 
   @Column()
   settleAfter: Date;
 
-  @Column({ nullable: true })
+  @Column({ type: "timestamptz", nullable: true })
   confirmedAt: Date | null;
 
   @CreateDateColumn()

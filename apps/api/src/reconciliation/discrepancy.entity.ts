@@ -26,7 +26,7 @@ export class Discrepancy {
   @Column()
   transactionRequestId: string;
 
-  @Column({ nullable: true })
+  @Column({ type: "uuid", nullable: true })
   externalTransactionId: string | null;
 
   @Column({ type: "enum", enum: DiscrepancyType })
@@ -50,6 +50,6 @@ export class Discrepancy {
   @CreateDateColumn()
   detectedAt: Date;
 
-  @Column({ nullable: true })
+  @Column({ type: "timestamptz", nullable: true })
   resolvedAt: Date | null;
 }
