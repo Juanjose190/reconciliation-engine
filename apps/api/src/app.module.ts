@@ -30,7 +30,7 @@ import { SeedService } from "./seed.service";
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         type: "postgres",
-        url: config.get<string>("DATABASE_URL") ?? "postgres://formance:formance@localhost:5432/reconciliation",
+        url: config.get<string>("DATABASE_URL") ?? "postgres://formance:formance@localhost:55432/reconciliation",
         entities: [Tenant, User, TransactionRequest, ExternalTransaction, ReconciliationRun, Discrepancy, Correction, AuditLog],
         synchronize: true
       })
