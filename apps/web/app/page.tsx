@@ -82,7 +82,8 @@ export default function Dashboard() {
 
   async function submitDeposit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const userId = String(form.get("userId"));
     const amount = String(form.get("amount"));
     await request("/deposits", {
@@ -96,7 +97,7 @@ export default function Dashboard() {
         idempotencyKey: `deposit-${crypto.randomUUID()}`
       })
     });
-    event.currentTarget.reset();
+    formElement.reset();
     await refreshTenantData();
   }
 
