@@ -94,6 +94,23 @@ services:
     depends_on:
       - traefik
 
+  github-runner:
+    image: myoung34/github-runner:2.326.0
+    profiles:
+      - ci
+    environment:
+      REPO_URL: ${GITHUB_RUNNER_REPO_URL:-https://github.com/Juanjose190/reconciliation-engine}
+      RUNNER_TOKEN: ${GITHUB_RUNNER_TOKEN:-}
+      RUNNER_NAME: ${GITHUB_RUNNER_NAME:-reconciliation-local-runner}
+      RUNNER_WORKDIR: /tmp/github-runner
+      LABELS: reconciliation,self-hosted,local
+      RUN_AS_ROOT: "false"
+      DISABLE_AUTO_UPDATE: "true"
+    volumes:
+      - github_runner_data:/runner/data
+      - /var/run/docker.sock:/var/run/docker.sock
+
 volumes:
   keycloak_data:
   kafka_data:
+  github_runner_data:

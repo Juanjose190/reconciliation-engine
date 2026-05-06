@@ -36,6 +36,12 @@ Front-End -> Internet/DNS/Cloudflare Tunnel -> Traefik -> Kong API Manager -> Co
 
 Core integrates with Keycloak, Kafka, Novu, Formance, and Postgres. See [docs/platform-architecture.md](docs/platform-architecture.md).
 
+Optional self-hosted GitHub Actions runner:
+
+```bash
+GITHUB_RUNNER_TOKEN=<registration-token> docker compose -f docker-compose.yml -f docker-compose.platform.yml --profile ci up -d github-runner
+```
+
 ## Troubleshooting
 
 If the API logs `role "formance" does not exist`, it is connecting to a Postgres instance that was not created by this Compose file. Run:
