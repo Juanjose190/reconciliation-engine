@@ -21,6 +21,7 @@ import { CorrectionsModule } from "./corrections/corrections.module";
 import { ReportsModule } from "./reports/reports.module";
 import { HealthController } from "./health.controller";
 import { SeedService } from "./seed.service";
+import { AuthModule } from "./auth/auth.module";
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { SeedService } from "./seed.service";
       })
     }),
     TypeOrmModule.forFeature([Tenant, User]),
+    AuthModule,
     TenantsModule,
     UsersModule,
     TransactionsModule,

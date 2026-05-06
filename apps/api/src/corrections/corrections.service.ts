@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { AuditLog } from "../audit/audit-log.entity";
 import { toMinorUnits } from "../common/money";
+import { EventPublisher } from "../events/event-publisher.service";
 import { AccountBuilder } from "../ledger/account-builder";
 import { LedgerService } from "../ledger/ledger.service";
 import { Discrepancy, DiscrepancyStatus } from "../reconciliation/discrepancy.entity";
@@ -18,7 +19,8 @@ export class CorrectionsService {
     @InjectRepository(Tenant) private readonly tenants: Repository<Tenant>,
     @InjectRepository(AuditLog) private readonly auditLogs: Repository<AuditLog>,
     private readonly ledger: LedgerService,
-    private readonly accounts: AccountBuilder
+    private readonly accounts: AccountBuilder,
+    private readonly events: EventPublisher
   ) {}
 
   async book(tenantId: string, discrepancyId: string, dto: BookCorrectionDto) {
@@ -82,6 +84,18 @@ export class CorrectionsService {
         actorId: null
       })
     );
+    await this.events.publish("reconciliation.corrections", {
+      type: "correction.booked",
+      tenantId,
+      entityId: correction.id,
+      occurredAt: new Date().toISOString(),
+      payload: {
+        correctionId: correction.id,
+        discrepancyId: discrepancy.id,
+        amount: correction.amount,
+        formanceTransactionId
+      }
+    });
 
     return { correction, discrepancy };
   }

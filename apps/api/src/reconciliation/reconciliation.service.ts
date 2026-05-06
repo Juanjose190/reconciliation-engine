@@ -6,8 +6,10 @@ import { AuditLog } from "../audit/audit-log.entity";
 import { fromMinorUnits, toMinorUnits } from "../common/money";
 import { ExternalTransaction, ExternalTransactionDirection, ExternalTransactionStatus } from "../fake-blockchain/external-transaction.entity";
 import { FakeBlockchainService } from "../fake-blockchain/fake-blockchain.service";
+import { EventPublisher } from "../events/event-publisher.service";
 import { AccountBuilder } from "../ledger/account-builder";
 import { LedgerService } from "../ledger/ledger.service";
+import { NotificationService } from "../notifications/notification.service";
 import { Tenant } from "../tenants/tenant.entity";
 import { TransactionRequest, TransactionStatus, TransactionType } from "../transactions/transaction-request.entity";
 import { Discrepancy, DiscrepancyStatus, DiscrepancyType } from "./discrepancy.entity";
@@ -26,7 +28,9 @@ export class ReconciliationService {
     @InjectRepository(AuditLog) private readonly auditLogs: Repository<AuditLog>,
     private readonly blockchain: FakeBlockchainService,
     private readonly ledger: LedgerService,
-    private readonly accounts: AccountBuilder
+    private readonly accounts: AccountBuilder,
+    private readonly events: EventPublisher,
+    private readonly notifications: NotificationService
   ) {}
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -201,6 +205,20 @@ export class ReconciliationService {
         actorId: null
       })
     );
+    await this.events.publish("reconciliation.discrepancies", {
+      type: "discrepancy.opened",
+      tenantId: request.tenantId,
+      entityId: discrepancy.id,
+      occurredAt: new Date().toISOString(),
+      payload: this.snapshot(discrepancy)
+    });
+    await this.notifications.discrepancyOpened({
+      tenantId: request.tenantId,
+      discrepancyId: discrepancy.id,
+      type: discrepancy.type,
+      description: discrepancy.description,
+      deltaAmount: discrepancy.deltaAmount
+    });
     return 1;
   }
 

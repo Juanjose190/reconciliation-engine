@@ -20,6 +20,22 @@ Development requests use `X-Tenant-Id`. Seed data is created by the API bootstra
 
 The Docker Postgres service is exposed on local port `55432` to avoid conflicts with an existing Postgres running on `5432`.
 
+## Platform Mode
+
+The heavier architecture from the platform sketch is available without adding a BFF:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.platform.yml up -d postgres formance-ledger traefik api-manager keycloak-db keycloak kafka
+```
+
+Traffic path:
+
+```text
+Front-End -> Internet/DNS/Cloudflare Tunnel -> Traefik -> Kong API Manager -> Core API
+```
+
+Core integrates with Keycloak, Kafka, Novu, Formance, and Postgres. See [docs/platform-architecture.md](docs/platform-architecture.md).
+
 ## Troubleshooting
 
 If the API logs `role "formance" does not exist`, it is connecting to a Postgres instance that was not created by this Compose file. Run:

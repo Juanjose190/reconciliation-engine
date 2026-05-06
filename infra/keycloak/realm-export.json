@@ -1,0 +1,59 @@
+{
+  "realm": "reconciliation",
+  "enabled": true,
+  "displayName": "Reconciliation Engine",
+  "clients": [
+    {
+      "clientId": "reconciliation-web",
+      "name": "Reconciliation Web",
+      "enabled": true,
+      "publicClient": true,
+      "redirectUris": [
+        "http://localhost:3000/*",
+        "http://localhost:8080/*"
+      ],
+      "webOrigins": [
+        "http://localhost:3000",
+        "http://localhost:8080"
+      ],
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true
+    },
+    {
+      "clientId": "reconciliation-core",
+      "name": "Reconciliation Core API",
+      "enabled": true,
+      "bearerOnly": true
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "ops"
+      },
+      {
+        "name": "admin"
+      }
+    ]
+  },
+  "users": [
+    {
+      "username": "ops@example.com",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Ops",
+      "lastName": "User",
+      "email": "ops@example.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "ops123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "ops"
+      ]
+    }
+  ]
+}

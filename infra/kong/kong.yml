@@ -1,0 +1,35 @@
+_format_version: "3.0"
+_transform: true
+
+services:
+  - name: core-api
+    url: http://host.docker.internal:3001
+    routes:
+      - name: core-api-route
+        paths:
+          - /api
+        strip_path: true
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - http://localhost:3000
+            - http://localhost:8080
+          methods:
+            - GET
+            - POST
+            - PUT
+            - PATCH
+            - DELETE
+            - OPTIONS
+          headers:
+            - Authorization
+            - Content-Type
+            - X-Tenant-Id
+          exposed_headers:
+            - X-Request-Id
+          credentials: true
+      - name: rate-limiting
+        config:
+          minute: 120
+          policy: local
