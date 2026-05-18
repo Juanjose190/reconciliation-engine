@@ -7,3 +7,8 @@ coverage
 *.log
 *.tsbuildinfo
 .DS_Store
+infra/nginx/certs/*.crt
+infra/nginx/certs/*.key
+infra/nginx/certs/*.csr
+infra/nginx/certs/*.srl
+!infra/nginx/certs/README.md

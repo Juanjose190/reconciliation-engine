@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { AuditLog } from "../audit/audit-log.entity";
+import { AlertsModule } from "../alerts/alerts.module";
 import { ExternalTransaction } from "../fake-blockchain/external-transaction.entity";
 import { FakeBlockchainModule } from "../fake-blockchain/fake-blockchain.module";
 import { EventsModule } from "../events/events.module";
@@ -19,6 +20,7 @@ import { ReconciliationService } from "./reconciliation.service";
     TypeOrmModule.forFeature([Tenant, TransactionRequest, ExternalTransaction, Discrepancy, ReconciliationRun, AuditLog]),
     FakeBlockchainModule,
     EventsModule,
+    AlertsModule,
     NotificationsModule
   ],
   controllers: [ReconciliationController],

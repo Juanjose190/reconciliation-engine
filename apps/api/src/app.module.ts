@@ -22,6 +22,7 @@ import { ReportsModule } from "./reports/reports.module";
 import { HealthController } from "./health.controller";
 import { SeedService } from "./seed.service";
 import { AuthModule } from "./auth/auth.module";
+import { AlertsModule } from "./alerts/alerts.module";
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { AuthModule } from "./auth/auth.module";
     }),
     TypeOrmModule.forFeature([Tenant, User]),
     AuthModule,
+    AlertsModule,
     TenantsModule,
     UsersModule,
     TransactionsModule,

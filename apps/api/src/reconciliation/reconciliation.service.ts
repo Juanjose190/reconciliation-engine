@@ -3,6 +3,7 @@ import { Cron, CronExpression } from "@nestjs/schedule";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { AuditLog } from "../audit/audit-log.entity";
+import { RabbitAlertPublisher } from "../alerts/rabbit-alert-publisher.service";
 import { fromMinorUnits, toMinorUnits } from "../common/money";
 import { ExternalTransaction, ExternalTransactionDirection, ExternalTransactionStatus } from "../fake-blockchain/external-transaction.entity";
 import { FakeBlockchainService } from "../fake-blockchain/fake-blockchain.service";
@@ -30,7 +31,8 @@ export class ReconciliationService {
     private readonly ledger: LedgerService,
     private readonly accounts: AccountBuilder,
     private readonly events: EventPublisher,
-    private readonly notifications: NotificationService
+    private readonly notifications: NotificationService,
+    private readonly alerts: RabbitAlertPublisher
   ) {}
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -218,6 +220,13 @@ export class ReconciliationService {
       type: discrepancy.type,
       description: discrepancy.description,
       deltaAmount: discrepancy.deltaAmount
+    });
+    await this.alerts.publishDiscrepancyAlert({
+      tenantId: request.tenantId,
+      discrepancyId: discrepancy.id,
+      type: discrepancy.type,
+      deltaAmount: discrepancy.deltaAmount,
+      detectedAt: discrepancy.detectedAt
     });
     return 1;
   }

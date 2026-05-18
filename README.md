@@ -36,6 +36,8 @@ Front-End -> Internet/DNS/Cloudflare Tunnel -> Traefik -> Kong API Manager -> Co
 
 Core integrates with Keycloak, Kafka, Novu, Formance, and Postgres. See [docs/platform-architecture.md](docs/platform-architecture.md).
 
+AWS/EC2 security hardening, Nginx mTLS, nftables, JWT tenant/scope enforcement, 2FA, RabbitMQ alerts, Route 53 private DNS, and SQL injection notes are documented in [docs/security-and-aws-hardening.md](docs/security-and-aws-hardening.md).
+
 Optional self-hosted GitHub Actions runner:
 
 ```bash

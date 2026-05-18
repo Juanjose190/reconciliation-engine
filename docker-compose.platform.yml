@@ -35,6 +35,18 @@ services:
       - traefik.http.routers.api-manager.entrypoints=web
       - traefik.http.services.api-manager.loadbalancer.server.port=8000
 
+  nginx-edge:
+    image: nginx:1.27-alpine
+    profiles:
+      - edge
+    depends_on:
+      - api-manager
+    ports:
+      - "8443:443"
+    volumes:
+      - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infra/nginx/certs:/etc/nginx/certs:ro
+
   keycloak-db:
     image: postgres:16-alpine
     environment:
@@ -86,6 +98,18 @@ services:
     volumes:
       - kafka_data:/var/lib/redpanda/data
 
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: reconciliation
+      RABBITMQ_DEFAULT_PASS: reconciliation
+      RABBITMQ_DEFAULT_VHOST: reconciliation
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
   cloudflare-tunnel:
     image: cloudflare/cloudflared:2025.1.0
     profiles:
@@ -113,4 +137,5 @@ services:
 volumes:
   keycloak_data:
   kafka_data:
+  rabbitmq_data:
   github_runner_data:

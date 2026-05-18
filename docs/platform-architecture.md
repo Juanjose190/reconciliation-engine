@@ -8,7 +8,8 @@ flowchart LR
   Internet --> DNS["DNS"]
   DNS --> Tunnel["Cloudflare Tunnel"]
   Tunnel --> Traefik["Traefik Edge Router"]
-  Traefik --> Gateway["API Manager (Kong)"]
+  Traefik --> Nginx["Nginx mTLS (EC2 edge)"]
+  Nginx --> Gateway["API Manager (Kong)"]
   Gateway --> Core["NestJS Core API"]
 
   Gateway --> Keycloak["Keycloak"]
@@ -30,10 +31,12 @@ The BFF is intentionally omitted. The front-end calls the API manager directly. 
 
 - Front-end: NextJS app in `apps/web`.
 - Traefik: local edge router on `http://localhost:8080`.
+- Nginx: EC2 edge option with mTLS on `https://localhost:8443`.
 - API Manager: Kong in DB-less mode on `http://localhost:8000`; Traefik routes `/api` to it.
 - Core: NestJS API, still run locally on `localhost:3001` during development.
 - Keycloak: realm `reconciliation`, admin `admin/admin`, demo user `ops@example.com/ops123`.
 - Kafka: Redpanda-compatible Kafka broker exposed on `localhost:19092`.
+- RabbitMQ: alert queue exposed on `localhost:5672`, management UI on `localhost:15672`.
 - Novu: integrated through HTTP API when `NOVU_API_KEY` and workflow ID are configured.
 - Formance: Ledger v2 from the base Compose file.
 - Postgres: metadata database exposed on `localhost:55432`.
@@ -50,7 +53,13 @@ docker compose up -d postgres formance-ledger
 Start platform edge/auth/event infrastructure:
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.platform.yml up -d traefik api-manager keycloak-db keycloak kafka
+docker compose -f docker-compose.yml -f docker-compose.platform.yml up -d traefik api-manager keycloak-db keycloak kafka rabbitmq
+```
+
+Start Nginx mTLS edge:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.platform.yml --profile edge up -d nginx-edge
 ```
 
 Start the optional GitHub self-hosted runner:
@@ -76,6 +85,9 @@ Useful local URLs:
 - Traefik dashboard: `http://localhost:8081`
 - Kong admin: `http://localhost:8001`
 - Keycloak: `http://localhost:8082`
+- RabbitMQ: `http://localhost:15672`
+
+For AWS EC2, nftables, internal DNS, Nginx mTLS, JWT claim enforcement, 2FA, RabbitMQ alerts, and SQL injection notes, see [security-and-aws-hardening.md](security-and-aws-hardening.md).
 
 ## GitHub Self-Hosted Runner
 
