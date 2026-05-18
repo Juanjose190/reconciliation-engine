@@ -67,6 +67,34 @@ AWS_PROFILE=reconciliation-academic terraform plan
 AWS_PROFILE=reconciliation-academic terraform apply
 ```
 
+## Free-Tier Friendly Manual Deploy
+
+AWS free-tier restrictions may block larger instances. For a stable classroom demo on `t3.small`, use the lightweight bootstrap:
+
+```bash
+AWS_PROFILE=reconciliation-academic aws ec2 run-instances \
+  --image-id <ubuntu-ami-id> \
+  --instance-type t3.small \
+  --key-name reconciliation-engine-academic \
+  --security-group-ids <security-group-id> \
+  --subnet-id <subnet-id> \
+  --associate-public-ip-address \
+  --block-device-mappings 'DeviceName=/dev/sda1,Ebs={VolumeSize=30,VolumeType=gp3,DeleteOnTermination=true}' \
+  --user-data file://user-data-lite.sh
+```
+
+The lightweight bootstrap runs:
+
+- EC2
+- Security Group
+- nftables
+- Nginx reverse proxy
+- Docker
+- Postgres
+- NestJS API
+
+The full Kafka/RabbitMQ/Keycloak/Formance platform remains documented in the main platform files, but the lightweight EC2 path is the safer live demo for a small academic instance.
+
 ## Test
 
 ```bash

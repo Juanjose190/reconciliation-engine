@@ -4,27 +4,18 @@ set -euxo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
 apt-get update
-apt-get install -y ca-certificates curl git nftables nginx rsyslog docker.io docker-compose-v2
+apt-get install -y ca-certificates curl git nftables nginx rsyslog docker.io
 
 systemctl enable --now docker
 usermod -aG docker ubuntu
 
 mkdir -p /opt/reconciliation
-git clone "${repository_url}" /opt/reconciliation/app
-
-cd /opt/reconciliation/app
-
-cp apps/api/.env.example apps/api/.env
-sed -i 's#DATABASE_URL=.*#DATABASE_URL=postgres://formance:formance@postgres:5432/reconciliation#' apps/api/.env
-sed -i 's#FORMANCE_BASE_URL=.*#FORMANCE_BASE_URL=http://formance-ledger:3068#' apps/api/.env
-sed -i 's#KAFKA_BROKERS=.*#KAFKA_BROKERS=kafka:9092#' apps/api/.env
-sed -i 's#RABBITMQ_URL=.*#RABBITMQ_URL=amqp://reconciliation:reconciliation@rabbitmq:5672/reconciliation#' apps/api/.env
+git clone "https://github.com/Juanjose190/reconciliation-engine.git" /opt/reconciliation/app
 
 cat > /etc/nftables.conf <<'NFT'
-flush ruleset
 table inet reconciliation_filter {
   chain input {
-    type filter hook input priority 0; policy drop;
+    type filter hook input priority filter; policy drop;
     ct state established,related accept
     iif "lo" accept
     tcp dport { 22, 80, 443 } ct state new accept
@@ -33,10 +24,10 @@ table inet reconciliation_filter {
     log prefix "NFT_RECONCILIATION_DENY input " flags all counter drop
   }
   chain forward {
-    type filter hook forward priority 0; policy accept;
+    type filter hook forward priority filter; policy accept;
   }
   chain output {
-    type filter hook output priority 0; policy accept;
+    type filter hook output priority filter; policy accept;
   }
 }
 NFT
@@ -58,14 +49,12 @@ server {
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_pass http://127.0.0.1:8000;
+    proxy_pass http://127.0.0.1:3001/;
   }
 
   location / {
-    proxy_set_header Host $host;
-    proxy_set_header X-Forwarded-Proto $scheme;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_pass http://127.0.0.1:3000;
+    return 200 'Reconciliation Engine academic EC2 demo. API health: /api/health\n';
+    add_header Content-Type text/plain;
   }
 }
 NGINX
@@ -75,7 +64,28 @@ ln -sf /etc/nginx/sites-available/reconciliation.conf /etc/nginx/sites-enabled/r
 nginx -t
 systemctl restart nginx
 
-docker compose -f docker-compose.yml -f docker-compose.platform.yml up -d postgres formance-ledger kafka rabbitmq api-manager keycloak-db keycloak
+docker network create reconciliation || true
+docker run -d --name reconciliation-postgres --restart unless-stopped \
+  --network reconciliation \
+  --network-alias postgres \
+  -e POSTGRES_USER=formance \
+  -e POSTGRES_PASSWORD=formance \
+  -e POSTGRES_DB=reconciliation \
+  postgres:16-alpine
+
+cat > /opt/reconciliation/app/apps/api/.env <<'ENV'
+PORT=3001
+DATABASE_URL=postgres://formance:formance@postgres:5432/reconciliation
+FORMANCE_BASE_URL=http://formance-ledger:3068
+FAKE_CHAIN_SETTLEMENT_SECONDS=30
+FAKE_CHAIN_FAILURE_RATE=0.1
+FAKE_CHAIN_DRIFT_RATE=0.2
+SEED_DEMO=true
+AUTH_REQUIRED=false
+KAFKA_BROKERS=
+RABBITMQ_URL=
+NOVU_API_KEY=
+ENV
 
 docker run --rm \
   -v /opt/reconciliation/app:/app \
@@ -83,18 +93,11 @@ docker run --rm \
   node:22-alpine npm ci
 
 docker run -d --name reconciliation-api --restart unless-stopped \
-  --network app_default \
+  --network reconciliation \
+  --network-alias core \
   --env-file /opt/reconciliation/app/apps/api/.env \
   -e PORT=3001 \
   -p 127.0.0.1:3001:3001 \
   -v /opt/reconciliation/app:/app \
   -w /app \
   node:22-alpine sh -c "npm run build --workspace api && npm run start:prod --workspace api"
-
-docker run -d --name reconciliation-web --restart unless-stopped \
-  --network app_default \
-  -e NEXT_PUBLIC_API_URL=http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)/api \
-  -p 127.0.0.1:3000:3000 \
-  -v /opt/reconciliation/app:/app \
-  -w /app \
-  node:22-alpine sh -c "npm run build --workspace web && npm run start --workspace web"
