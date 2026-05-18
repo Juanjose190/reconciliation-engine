@@ -1,0 +1,8 @@
+aws_profile = "reconciliation-academic"
+aws_region  = "us-east-1"
+admin_cidr  = "201.182.250.90/32"
+ssh_public_key_path  = "~/.ssh/id_ed25519.pub"
+ssh_private_key_path = "~/.ssh/id_ed25519"
+
+# Keep this false for the cheapest academic demo.
+create_private_dns = false

@@ -12,3 +12,6 @@ infra/nginx/certs/*.key
 infra/nginx/certs/*.csr
 infra/nginx/certs/*.srl
 !infra/nginx/certs/README.md
+infra/aws-academic/.terraform/
+infra/aws-academic/terraform.tfstate*
+infra/aws-academic/terraform.tfvars
